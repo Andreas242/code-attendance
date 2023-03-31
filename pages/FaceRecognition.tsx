@@ -76,7 +76,7 @@ const FaceRecognition: React.FC = () => {
         ))}
       </ul>
 */}
-      <Presentation recognizedNames={recognizedNames} language={language} setLanguage={setLanguage}/>
+      <Presentation recognizedNames={recognizedNames}/>
     </div>
   );
 };
