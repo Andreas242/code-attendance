@@ -1,13 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import Presentation from './Presentation';
+import Startpage from './Startpage';
 
 const API_BASE_URL = 'http://localhost:5000';
 
 const FaceRecognition: React.FC = () => {
   const [recognizedNames, setRecognizedNames] = useState<string[]>([]);
-  const [language, setLanguage] = useState(undefined);
-
   const startRecognition = async () => {
     try {
       const response = await axios.post('http://localhost:5000/api/start');
@@ -40,7 +39,7 @@ const FaceRecognition: React.FC = () => {
         } catch (error) {
           console.error('Error fetching recognized names:', error);
         }
-      }, 500); // Poll every 0.5 seconds
+      }, 2000); // Poll every 0.5 seconds
   
       setTimeout(() => {
         clearInterval(intervalId); // Stop polling after 3 hours
@@ -75,8 +74,9 @@ const FaceRecognition: React.FC = () => {
           <li key={index}>{name}</li>
         ))}
       </ul>
+     {!language && <Startpage setLanguage={setLanguage}/>}
 */}
-      <Presentation recognizedNames={recognizedNames}/>
+        <Presentation recognizedNames={recognizedNames} />
     </div>
   );
 };

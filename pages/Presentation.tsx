@@ -18,6 +18,7 @@ interface PresentationProps {
 }
 
 const Presentation: React.FC<PresentationProps> = ({ recognizedNames }) => {
+    const [language, setLanguage] = useState('');
     const [isPlaying, setIsPlaying] = useState(true);
     const [isMuted, setIsMuted] = useState(true);
     const [isClient, setIsClient] = useState(false);
@@ -26,6 +27,7 @@ const Presentation: React.FC<PresentationProps> = ({ recognizedNames }) => {
     const [isSearchingFaster, setIsSearchingFaster] = useState(false);
     const [isShowNameBig, setShowNameBig] = useState(false);
     const [counter, setCounter] = useState(0);
+    const [videoTime, setVideoTime] = useState(0); 
     const playerRef = useRef<ReactPlayer>(null);
 
     const [attendees, setAttendees] = useState<Attendee[]>([]);
@@ -37,7 +39,7 @@ const Presentation: React.FC<PresentationProps> = ({ recognizedNames }) => {
             const newId = attendees.length > 0 ? attendees[attendees.length - 1].id + 1 : 1;
             setAttendees([...attendees, { id: newId, name: recognizedNames[recognizedNames.length - 1] }]);
             setNewAttendee('');
-        }, 5000)
+        }, 21400)
     };
 
     useEffect(() => {
@@ -52,8 +54,9 @@ const Presentation: React.FC<PresentationProps> = ({ recognizedNames }) => {
             console.log(recognizedNames.length + ' ' + attendees.length);
             if (!isVideoBusy && recognizedNames.length > attendees.length) {
                 addAttendee();
+                console.log(attendees.length);
                 //  playVideo();
-                handleTimestampClick(6.1);
+                language === 'E' ?  handleTimestampClick(6.1) : handleTimestampClick(1.25);
                 setIsVideoBusy(true);
                 setIsSearching(true);
             }
@@ -66,13 +69,12 @@ const Presentation: React.FC<PresentationProps> = ({ recognizedNames }) => {
         { time: 33.7, label: "Timestamp 3" },
     ];
 
-
     const handleTimestampClick = (time: number) => {
         setIsMuted(false);
         playerRef.current?.seekTo(time);
     };
 
-    const handleProgress = ({ playedSeconds }: { playedSeconds: number }) => {
+    const handleProgressEnglish = ({ playedSeconds }: { playedSeconds: number }) => {
         //   console.log(playedSeconds);
         if (isPlaying && playedSeconds > 4.5 && playedSeconds < 6) {
             //      console.log('STOP');
@@ -101,6 +103,35 @@ const Presentation: React.FC<PresentationProps> = ({ recognizedNames }) => {
         }
     };
 
+    const handleProgressNorwegian = ({ playedSeconds }: { playedSeconds: number }) => {
+     //   console.log(playedSeconds);
+     if (isPlaying && playedSeconds > 0.55 && playedSeconds <= 1.2) {
+         //      console.log('STOP');
+         const newCounter = counter + 1;
+         setCounter(newCounter);
+         if (counter < 18) {
+             playerRef.current?.seekTo(0);
+
+         } else {
+             playerRef.current?.seekTo(26);
+             setCounter(0);
+         }
+         setIsVideoBusy(false);
+     }
+     if (isPlaying && playedSeconds > 12) {
+         setIsSearchingFaster(true);
+     }
+     if (isPlaying && playedSeconds > 18) {
+         setIsSearching(false);
+         setIsSearchingFaster(false);
+         setShowNameBig(true);
+     }
+     if (isPlaying && playedSeconds > 33) {
+         setIsVideoBusy(false);
+         setShowNameBig(false);
+     }
+ };
+
     if (!isClient) {
         return <div>Loading...</div>;
     }
@@ -112,26 +143,43 @@ const Presentation: React.FC<PresentationProps> = ({ recognizedNames }) => {
     return (
         <div className={styles.container}>
             <main className={styles.main}>
+                
                 <h1 className={styles.title}>R E G I S T R A T I O N</h1>
+
                 <div className={styles.innerWrapper}>
+
                     <div className={styles.video}>
-                        <ReactPlayer
+                    {language ==='E' && <ReactPlayer
                             url="Welcome_final.mp4"
                             autoPlay
                             muted={isMuted}
                             data-autoplay=""
                             playing={isPlaying}
                             ref={playerRef}
-                            onProgress={handleProgress}
+                            onProgress={handleProgressEnglish}
                             
                             height={'99vh'}
                             loop={true}
                         />
+                    }
+                    {language ==='N' && <ReactPlayer
+                            url="Welcome3.mp4"
+                            autoPlay
+                            muted={isMuted}
+                            data-autoplay=""
+                            playing={isPlaying}
+                            ref={playerRef}
+                            onProgress={handleProgressNorwegian}                            
+                            height={'99vh'}
+                            loop={true}
+                            controls
+                        />
+
+                    }
                     </div>
 
                     <div className={styles.registerdArea}>
                         <div className={styles.attendeesInput}>
-                            {isMuted && <button onClick={()=> setIsMuted(false)}>Start</button>}
                             {isSearching &&
                                 <div className={styles.wrap}>
                                     <div className={styles.loading}>
@@ -141,9 +189,7 @@ const Presentation: React.FC<PresentationProps> = ({ recognizedNames }) => {
                                     </div>
                                 </div>}
                             {isShowNameBig && !isSearching && 
-                            
                             <div className={`${styles.bigName} ${styles.lineUp} ${styles.out}`}>{newAttendee}</div>}
-
                         </div>
                         <div id="" className={styles.attendeesList}>
                             <TransitionGroup component={null}>
@@ -157,12 +203,14 @@ const Presentation: React.FC<PresentationProps> = ({ recognizedNames }) => {
                     </div>
                 </div>
             </main>
+            <div className={styles.buttonGroup}>
+                <button disabled={isVideoBusy} onClick={(()=> setLanguage('N'))} className={styles.languageButton}>Norsk</button>
+                <button disabled={isVideoBusy} onClick={(()=> setLanguage('E'))} className={styles.languageButton}>Engelsk</button>
+                {isMuted && language !='' && <button onClick={()=> setIsMuted(false)} className={styles.languageButton}>Start</button>}
+            </div>
         </div>
     );
 };
 
 export default Presentation;
-function setIsClient(arg0: boolean) {
-    throw new Error("Function not implemented.");
-}
 
